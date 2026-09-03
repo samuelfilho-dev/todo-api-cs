@@ -1,31 +1,60 @@
+using AutoMapper;
+using TodoCs.Database;
 using TodoCs.Dtos;
+using TodoCs.Models;
 
 namespace TodoCs.Services;
 
-public class TodoService : ITodoService
+public class TodoService(AppDbContext context, IMapper mapper) : ITodoService
 {
-    public Task<TodoResponse> CreateTodoAsync(CreateTodoRequest request)
+    public async Task<TodoResponse> CreateTodoAsync(CreateTodoRequest request)
     {
-        throw new NotImplementedException();
+        var todo = new Todo
+        {
+            Title = request.Title,
+            IsCompleted = false,
+            UserId = request.UserId,
+        };
+
+        context.Todos.Add(todo);
+        await context.SaveChangesAsync();
+
+        return mapper.Map<TodoResponse>(todo);
     }
 
-    public Task<bool> DeleteTodoAsync(int id)
+    public async Task<bool> DeleteTodoAsync(int id)
     {
-        throw new NotImplementedException();
+        var todo = await context.Todos.FindAsync(id);
+        if (todo is null) return false;
+
+        context.Todos.Remove(todo);
+        await context.SaveChangesAsync();
+
+        return true;
     }
 
-    public Task<List<TodoResponse>> GetAllTodosAsync()
+    public async Task<List<TodoResponse>> GetAllTodosAsync()
     {
-        throw new NotImplementedException();
+        var todos = context.Todos.ToList();
+        return mapper.Map<List<TodoResponse>>(todos);
     }
 
-    public Task<TodoResponse> GetTodoByIdAsync(int id)
+    public async Task<TodoResponse> GetTodoByIdAsync(int id)
     {
-        throw new NotImplementedException();
+        var todos = await context.Todos.FindAsync(id);
+        return mapper.Map<TodoResponse>(todos);
     }
 
-    public Task<TodoResponse?> UpdateTodoAsync(int id, UpdateTodoRequest request)
+    public async Task<TodoResponse?> UpdateTodoAsync(int id, UpdateTodoRequest request)
     {
-        throw new NotImplementedException();
+        var todo = await context.Todos.FindAsync(id);
+        if (todo is null) return null;
+
+        todo.Title = request.Title;
+        todo.IsCompleted = request.IsCompleted;
+
+        await context.SaveChangesAsync();
+
+        return mapper.Map<TodoResponse>(todo);
     }
 }
