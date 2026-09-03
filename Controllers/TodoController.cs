@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TodoCs.Dtos;
 using TodoCs.Services;
@@ -6,6 +7,7 @@ namespace TodoCs.Controllers;
 
 [Route("api/Todo")]
 [ApiController]
+[Authorize]
 public class TodoContoller(ITodoService todoService) : ControllerBase
 {
     [HttpGet]
