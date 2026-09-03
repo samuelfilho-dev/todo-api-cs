@@ -6,8 +6,13 @@ using Scalar.AspNetCore;
 using TodoCs.Database;
 using TodoCs.Models;
 using TodoCs.Services;
+using DotNetEnv;
+
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddEnvironmentVariables();
 
 // Add services to the container.
 
