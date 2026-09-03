@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using TodoCs.Database;
+using TodoCs.Models;
 using TodoCs.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,7 +15,11 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddAutoMapper(configuration =>
+    configuration.AddMaps(typeof(Program).Assembly));
 
+builder.Services.AddScoped<PasswordHasher<User>>();
+builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITodoService, TodoService>();
 

@@ -47,6 +47,10 @@ Generated\ Files/
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
+[Bb]in/
+[Oo]bj/
+
+
 # NUnit
 *.VisualState.xml
 TestResult.xml
