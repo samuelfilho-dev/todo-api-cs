@@ -1,3 +1,5 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using AutoMapper;
 using TodoCs.Models;
 using TodoCs.Database;
@@ -5,7 +7,7 @@ using TodoCs.Dtos;
 
 namespace TodoCs.Services;
 
-public class UserService(AppDbContext context, IPasswordService passwordService, IMapper mapper) : IUserService
+public class UserService(AppDbContext context, IPasswordService passwordService, IMapper mapper, IHttpContextAccessor contextAccessor) : IUserService
 {
     public async Task<UserResponse> CreateUserAsync(CreateUserRequest request)
     {
@@ -28,7 +30,7 @@ public class UserService(AppDbContext context, IPasswordService passwordService,
     public async Task<bool> DeleteUserAsync(int id)
     {
         var user = await context.Users.FindAsync(id);
-        if (user is null) return false;
+        if (user is null || id != GetUserId()) return false;
 
         user.Status = UserStatus.INACTIVE;
         await context.SaveChangesAsync();
@@ -42,16 +44,18 @@ public class UserService(AppDbContext context, IPasswordService passwordService,
         return mapper.Map<List<UserResponse>>(users);
     }
 
-    public async Task<UserResponse> GetUserByIdAsync(int id)
+    public async Task<UserResponse?> GetUserByIdAsync(int id)
     {
         var user = await context.Users.FindAsync(id);
+        if (user is null || id != GetUserId()) return null;
+
         return mapper.Map<UserResponse>(user);
     }
 
     public async Task<UserResponse?> UpdateUserAsync(int id, UpdateUserRequest request)
     {
         var user = await context.Users.FindAsync(id);
-        if (user is null) return null;
+        if (user is null || id != GetUserId()) return null;
 
         user.FirstName = request.FirstName;
         user.LastName = request.LastName;
@@ -59,5 +63,18 @@ public class UserService(AppDbContext context, IPasswordService passwordService,
 
         await context.SaveChangesAsync();
         return mapper.Map<UserResponse>(user);
+    }
+
+    private int GetUserId()
+    {
+        var userId = contextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? contextAccessor.HttpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+
+        if (!int.TryParse(userId, out var parsedUserId))
+        {
+            throw new InvalidOperationException("User ID not found in the request context.");
+        }
+
+        return parsedUserId;
     }
 }

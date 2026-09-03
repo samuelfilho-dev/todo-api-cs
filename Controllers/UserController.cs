@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TodoCs.Dtos;
 using TodoCs.Services;
@@ -8,6 +9,7 @@ namespace TodoCs.Controllers;
 [ApiController]
 public class UserController(IUserService userService) : ControllerBase
 {
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> GetAllUsers()
     {
@@ -15,6 +17,7 @@ public class UserController(IUserService userService) : ControllerBase
         return Ok(users);
     }
 
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetUserById(int id)
     {
@@ -32,6 +35,7 @@ public class UserController(IUserService userService) : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<IActionResult> UpdateUser(int id, UpdateUserRequest request)
     {
         var user = await userService.UpdateUserAsync(id, request);
@@ -41,6 +45,7 @@ public class UserController(IUserService userService) : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async Task<IActionResult> DeleteUser(int id)
     {
         var result = await userService.DeleteUserAsync(id);
